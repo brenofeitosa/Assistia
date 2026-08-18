@@ -301,8 +301,9 @@
         </div>
     </div>
 
-    <!-- CARREGAMENTO DOS MÓDULOS JAVASCRIPT -->
+<!-- CARREGAMENTO DOS MÓDULOS JAVASCRIPT (ORDEM CORRIGIDA) -->
     <script src="assets/js/storage.js"></script>
+    <script src="assets/js/leads.js"></script>
     <script src="assets/js/products.js"></script>
     <script src="assets/js/customers.js"></script>
     <script src="assets/js/chats.js"></script>
@@ -313,7 +314,7 @@
     <script src="assets/js/brain.js"></script>
     <script src="assets/js/app.js"></script>
 
-    <!-- SCRIPT DE NAVEGAÇÃO GARANTIDA -->
+    <!-- SCRIPT DE NAVEGAÇÃO E CONTROLE -->
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         const navButtons = document.querySelectorAll('.nav-btn');
@@ -324,24 +325,19 @@
           btn.addEventListener('click', (e) => {
             e.preventDefault();
             
-            // Pega o nome da tela a ser exibida
             const targetView = btn.getAttribute('data-view');
             if (!targetView) return;
 
-            // Remove a classe 'active' de todos os botões e telas
             navButtons.forEach(b => b.classList.remove('active'));
             sections.forEach(s => s.classList.remove('active'));
 
-            // Ativa o botão clicado
             btn.classList.add('active');
 
-            // Exibe a tela correspondente
             const activeSection = document.getElementById(`view-${targetView}`);
             if (activeSection) {
               activeSection.classList.add('active');
             }
 
-            // Atualiza o título no topo
             if (pageTitle) {
               const btnText = btn.querySelector('span')?.innerText || 'Dashboard';
               pageTitle.innerText = btnText;
