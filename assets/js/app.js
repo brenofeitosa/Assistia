@@ -1,16 +1,259 @@
-/**
- * Aplicação Principal - Controlador de UI e Fluxos do AssistIA Sales
- */
+// ==========================================
+// 1. STORAGE MANAGER
+// ==========================================
+window.StorageManager = {
+    get(key, defaultValue) {
+        try {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : defaultValue;
+        } catch (e) {
+            return defaultValue;
+        }
+    },
+    set(key, value) {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {}
+    },
+    clearAll() {
+        localStorage.clear();
+    }
+};
 
-function initAssistIASales() {
-    // 1. Inicializar Dados e Métricas
+// ==========================================
+// 2. PRODUCTS MODULE
+// ==========================================
+window.ProductsModule = {
+    getProducts() {
+        return StorageManager.get('assistia_products', []);
+    },
+    saveProduct(product) {
+        const products = this.getProducts();
+        product.id = product.id || 'prod_' + Date.now();
+        products.push(product);
+        StorageManager.set('assistia_products', products);
+    },
+    getProductById(id) {
+        return this.getProducts().find(p => p.id === id);
+    },
+    seedInitialData() {
+        if (this.getProducts().length === 0) {
+            const initial = [{
+                id: 'prod_1',
+                name: 'Curso Vendas WhatsApp 24h',
+                price: 97.00,
+                description: 'Aprenda a estruturar scripts de automação e converter leads no WhatsApp.',
+                checkoutUrl: 'https://checkout.exemplo.com/curso',
+                targetAudience: 'Empreendedores e Vendedores',
+                faqs: 'Tem garantia? Sim, 7 dias.'
+            }];
+            StorageManager.set('assistia_products', initial);
+        }
+    },
+    renderProductsUI(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const products = this.getProducts();
+        container.innerHTML = products.map(p => `
+            <div class="card p-3 mb-2">
+                <h3>${p.name}</h3>
+                <p><strong>Preço:</strong> R$ ${parseFloat(p.price).toFixed(2)}</p>
+                <p class="text-sm">${p.description}</p>
+            </div>
+        `).join('');
+    }
+};
+
+// ==========================================
+// 3. LEADS MODULE
+// ==========================================
+window.LeadsModule = {
+    getLeads() {
+        return StorageManager.get('assistia_leads', []);
+    },
+    saveLead(lead) {
+        const leads = this.getLeads();
+        const index = leads.findIndex(l => l.id === lead.id);
+        if (index >= 0) {
+            leads[index] = lead;
+        } else {
+            leads.push(lead);
+        }
+        StorageManager.set('assistia_leads', leads);
+    },
+    getLeadById(id) {
+        return this.getLeads().find(l => l.id === id);
+    },
+    renderLeadsUI(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const leads = this.getLeads();
+        if (leads.length === 0) {
+            container.innerHTML = `<tr><td colspan="4">Nenhum lead registrado.</td></tr>`;
+            return;
+        }
+        container.innerHTML = leads.map(l => `
+            <tr>
+                <td><strong>${l.name}</strong></td>
+                <td>${l.intent || 'Interesse Geral'}</td>
+                <td><span class="badge">${l.status || 'Em atendimento'}</span></td>
+                <td>${new Date(l.createdAt).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</td>
+            </tr>
+        `).join('');
+    }
+};
+
+// ==========================================
+// 4. SALES MODULE
+// ==========================================
+window.SalesModule = {
+    getSales() {
+        return StorageManager.get('assistia_sales', []);
+    },
+    recordSale(sale) {
+        const sales = this.getSales();
+        sale.id = 'sale_' + Date.now();
+        sale.timestamp = new Date().toISOString();
+        sales.push(sale);
+        StorageManager.set('assistia_sales', sales);
+    },
+    updateDashboardMetrics() {
+        const sales = this.getSales();
+        const leads = LeadsModule.getLeads();
+
+        const totalSalesVal = sales.reduce((acc, s) => acc + parseFloat(s.amount || 0), 0);
+        const recoveredVal = sales.filter(s => s.type === 'RECOVERY').reduce((acc, s) => acc + parseFloat(s.amount || 0), 0);
+
+        const elToday = document.getElementById('dash-sales-today');
+        const elAi = document.getElementById('dash-sales-ai');
+        const elRec = document.getElementById('dash-sales-recovered');
+        const elLeads = document.getElementById('dash-leads-count');
+        const elConv = document.getElementById('dash-conversion-rate');
+
+        if (elToday) elToday.innerText = `R$ ${totalSalesVal.toFixed(2)}`;
+        if (elAi) elAi.innerText = `R$ ${totalSalesVal.toFixed(2)}`;
+        if (elRec) elRec.innerText = `R$ ${recoveredVal.toFixed(2)}`;
+        if (elLeads) elLeads.innerText = leads.length;
+
+        if (elConv) {
+            const rate = leads.length > 0 ? ((sales.length / leads.length) * 100).toFixed(1) : '0.0';
+            elConv.innerText = `${rate}%`;
+        }
+
+        const table = document.getElementById('dash-recent-sales-table');
+        if (table) {
+            if (sales.length === 0) {
+                table.innerHTML = `<tr><td colspan="5">Nenhuma venda registrada ainda.</td></tr>`;
+            } else {
+                table.innerHTML = sales.slice(-5).reverse().map(s => `
+                    <tr>
+                        <td>${s.leadName || 'Cliente'}</td>
+                        <td>${s.productName}</td>
+                        <td>R$ ${parseFloat(s.amount).toFixed(2)}</td>
+                        <td>${s.type === 'RECOVERY' ? 'Recuperada' : 'Direta'}</td>
+                        <td>${new Date(s.timestamp).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</td>
+                    </tr>
+                `).join('');
+            }
+        }
+    }
+};
+
+// ==========================================
+// 5. AI ENGINE MODULE
+// ==========================================
+window.AIEngine = {
+    parseProductOffer(text) {
+        const priceMatch = text.match(/R\$\s?(\d+[\.,]?\d*)/i);
+        const price = priceMatch ? parseFloat(priceMatch[1].replace(',', '.')) : 97.00;
+        const lines = text.split('\n').filter(l => l.trim().length > 0);
+        return {
+            name: lines[0] || 'Oferta Importada',
+            price: price,
+            checkoutUrl: 'https://checkout.exemplo.com/pay',
+            description: lines[1] || 'Descrição da oferta',
+            targetAudience: 'Público Geral',
+            faqs: 'Dúvidas frequentes'
+        };
+    },
+    generateSalesResponse(input, product) {
+        const text = input.toLowerCase();
+        const pName = product ? product.name : 'nosso produto';
+        const pPrice = product ? `R$ ${parseFloat(product.price).toFixed(2)}` : '';
+
+        if (text.includes('comprar') || text.includes('link') || text.includes('preco') || text.includes('preço') || text.includes('valor')) {
+            return {
+                text: `Perfeito! O valor do ${pName} é ${pPrice}. Você pode finalizar sua compra com acesso imediato através do link de checkout segurado.`,
+                sendCheckout: true,
+                intent: 'Compra'
+            };
+        }
+        return {
+            text: `Entendi sua dúvida sobre o ${pName}. Esse treinamento foi desenhado exatamente para te ajudar a ter resultados práticos no WhatsApp. Quer garantir sua vaga agora?`,
+            sendCheckout: false,
+            intent: 'Dúvida'
+        };
+    }
+};
+
+// ==========================================
+// 6. RECOVERY MODULE
+// ==========================================
+window.RecoveryModule = {
+    renderRecoveryUI(containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const leads = LeadsModule.getLeads().filter(l => l.checkoutSent && !l.converted);
+
+        if (leads.length === 0) {
+            container.innerHTML = `<tr><td colspan="6">Nenhum lead na fila de recuperação.</td></tr>`;
+            return;
+        }
+
+        container.innerHTML = leads.map(l => `
+            <tr>
+                <td><strong>${l.name}</strong></td>
+                <td>${l.productName}</td>
+                <td>R$ ${parseFloat(l.productPrice).toFixed(2)}</td>
+                <td><span class="badge">${l.status || 'Checkout Enviado'}</span></td>
+                <td>${new Date(l.createdAt).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</td>
+                <td>
+                    <button class="btn btn-success btn-sm" onclick="window.RecoveryModule.simulateRecovery('${l.id}')">
+                        Simular Recuperação
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    },
+    simulateRecovery(leadId) {
+        const lead = LeadsModule.getLeadById(leadId);
+        if (!lead) return;
+        lead.status = 'Recuperado';
+        lead.converted = true;
+        LeadsModule.saveLead(lead);
+
+        SalesModule.recordSale({
+            leadName: lead.name,
+            productName: lead.productName,
+            amount: lead.productPrice,
+            type: 'RECOVERY'
+        });
+
+        this.renderRecoveryUI('recovery-list-table');
+        SalesModule.updateDashboardMetrics();
+    }
+};
+
+// ==========================================
+// 7. INICIALIZAÇÃO DA APLICAÇÃO (APP CONTROLLER)
+// ==========================================
+function startApp() {
     ProductsModule.seedInitialData();
     SalesModule.updateDashboardMetrics();
 
-    // Estado da conversa do simulador
     let currentSimLead = {
         id: 'lead_' + Date.now(),
-        name: 'Cliente Simulado (WhatsApp)',
+        name: 'Cliente Simulado',
         productName: '',
         productPrice: 0,
         checkoutSent: false,
@@ -18,7 +261,7 @@ function initAssistIASales() {
         createdAt: new Date().toISOString()
     };
 
-    // 2. Navegação Single Page (SPA)
+    // Navegação entre telas
     const navButtons = document.querySelectorAll('.nav-btn');
     const viewSections = document.querySelectorAll('.view-section');
     const pageTitle = document.getElementById('page-title');
@@ -27,7 +270,7 @@ function initAssistIASales() {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             const targetView = btn.getAttribute('data-view');
-            
+
             navButtons.forEach(b => b.classList.remove('active'));
             viewSections.forEach(s => s.classList.remove('active'));
 
@@ -37,20 +280,18 @@ function initAssistIASales() {
 
             if (pageTitle) pageTitle.innerText = btn.querySelector('span').innerText;
 
-            // Handlers por tela
             if (targetView === 'dashboard') SalesModule.updateDashboardMetrics();
             if (targetView === 'products') ProductsModule.renderProductsUI('products-list');
             if (targetView === 'recovery') RecoveryModule.renderRecoveryUI('recovery-list-table');
             if (targetView === 'leads') LeadsModule.renderLeadsUI('leads-list-table');
             if (targetView === 'simulator') loadSimulatorContext();
 
-            // Mobile Auto-Close
             const sidebar = document.getElementById('sidebar');
             if (sidebar) sidebar.classList.remove('open');
         });
     });
 
-    // Mobile Toggle
+    // Mobile Toggle Menu
     const mobileToggle = document.getElementById('mobile-toggle');
     if (mobileToggle) {
         mobileToggle.addEventListener('click', () => {
@@ -59,13 +300,12 @@ function initAssistIASales() {
         });
     }
 
-    // 3. Modal de Importação com IA
+    // Modal Importação
     const modal = document.getElementById('modal-import');
     const btnOpenImport = document.getElementById('btn-open-import-modal');
     const btnCloseImport = document.getElementById('btn-close-modal');
     const btnProcessIA = document.getElementById('btn-process-ia-import');
     const btnSaveProduct = document.getElementById('btn-save-extracted-product');
-    const btnBackImport = document.getElementById('btn-back-import');
 
     if (btnOpenImport) {
         btnOpenImport.addEventListener('click', () => {
@@ -79,56 +319,37 @@ function initAssistIASales() {
         btnCloseImport.addEventListener('click', () => modal.classList.remove('active'));
     }
 
-    let extractedData = null;
-
     if (btnProcessIA) {
         btnProcessIA.addEventListener('click', () => {
             const rawText = document.getElementById('import-raw-text').value;
-            if (!rawText.trim()) {
-                alert('Por favor, cole o texto da oferta para a IA analisar.');
-                return;
-            }
+            if (!rawText.trim()) return alert('Cole o texto da oferta.');
 
-            extractedData = AIEngine.parseProductOffer(rawText);
-
-            document.getElementById('extracted-name').value = extractedData.name;
-            document.getElementById('extracted-price').value = extractedData.price;
-            document.getElementById('extracted-checkout').value = extractedData.checkoutUrl;
-            document.getElementById('extracted-desc').value = extractedData.description;
-            document.getElementById('extracted-audience').value = extractedData.targetAudience;
-            document.getElementById('extracted-faqs').value = extractedData.faqs;
+            const extracted = AIEngine.parseProductOffer(rawText);
+            document.getElementById('extracted-name').value = extracted.name;
+            document.getElementById('extracted-price').value = extracted.price;
+            document.getElementById('extracted-checkout').value = extracted.checkoutUrl;
+            document.getElementById('extracted-desc').value = extracted.description;
 
             document.getElementById('import-step-1').classList.add('hidden');
             document.getElementById('import-step-2').classList.remove('hidden');
         });
     }
 
-    if (btnBackImport) {
-        btnBackImport.addEventListener('click', () => {
-            document.getElementById('import-step-1').classList.remove('hidden');
-            document.getElementById('import-step-2').classList.add('hidden');
-        });
-    }
-
     if (btnSaveProduct) {
         btnSaveProduct.addEventListener('click', () => {
-            const finalProduct = {
+            ProductsModule.saveProduct({
                 name: document.getElementById('extracted-name').value,
                 price: parseFloat(document.getElementById('extracted-price').value),
                 checkoutUrl: document.getElementById('extracted-checkout').value,
-                description: document.getElementById('extracted-desc').value,
-                targetAudience: document.getElementById('extracted-audience').value,
-                faqs: document.getElementById('extracted-faqs').value
-            };
-
-            ProductsModule.saveProduct(finalProduct);
+                description: document.getElementById('extracted-desc').value
+            });
             modal.classList.remove('active');
             ProductsModule.renderProductsUI('products-list');
-            alert('Produto salvo com sucesso!');
+            alert('Produto cadastrado!');
         });
     }
 
-    // 4. Lógica do Simulador de Chat
+    // Simulador Chat
     const simProductSelect = document.getElementById('sim-product-select');
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
@@ -139,112 +360,61 @@ function initAssistIASales() {
         if (simProductSelect) {
             simProductSelect.innerHTML = products.map(p => `<option value="${p.id}">${p.name} - R$ ${parseFloat(p.price).toFixed(2)}</option>`).join('');
         }
-
-        if (products.length > 0) {
-            updateSimulatedProductDetails(products[0]);
-        }
+        if (products.length > 0) updateSimProduct(products[0]);
     }
 
-    function updateSimulatedProductDetails(product) {
+    function updateSimProduct(product) {
         const detailsEl = document.getElementById('sim-product-details');
         if (detailsEl) {
-            detailsEl.innerHTML = `
-                <h4>${product.name}</h4>
-                <p><strong>Preço:</strong> R$ ${parseFloat(product.price).toFixed(2)}</p>
-                <p class="text-sm mt-1">${product.description}</p>
-            `;
+            detailsEl.innerHTML = `<h4>${product.name}</h4><p>R$ ${parseFloat(product.price).toFixed(2)}</p>`;
         }
-        const titleEl = document.getElementById('chat-product-title');
-        if (titleEl) titleEl.innerText = `Vendedor IA - ${product.name}`;
-        
         currentSimLead.productName = product.name;
         currentSimLead.productPrice = product.price;
-        resetChat();
     }
 
     if (simProductSelect) {
         simProductSelect.addEventListener('change', (e) => {
-            const product = ProductsModule.getProductById(e.target.value);
-            if (product) updateSimulatedProductDetails(product);
+            const p = ProductsModule.getProductById(e.target.value);
+            if (p) updateSimProduct(p);
         });
     }
 
-    function resetChat() {
-        if (chatMessages) {
-            chatMessages.innerHTML = `
-                <div class="message ai">
-                    Olá! Sou o assistente de vendas. Como posso te ajudar hoje sobre este treinamento?
-                </div>
-            `;
-        }
-        currentSimLead.checkoutSent = false;
-    }
+    if (btnSendMsg && chatInput) {
+        btnSendMsg.addEventListener('click', () => {
+            const text = chatInput.value.trim();
+            if (!text) return;
 
-    const btnResetChat = document.getElementById('btn-reset-chat');
-    if (btnResetChat) btnResetChat.addEventListener('click', resetChat);
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            userMsg.innerText = text;
+            chatMessages.appendChild(userMsg);
+            chatInput.value = '';
 
-    function handleSendMessage() {
-        if (!chatInput) return;
-        const text = chatInput.value.trim();
-        if (!text) return;
+            const pId = simProductSelect ? simProductSelect.value : null;
+            const p = ProductsModule.getProductById(pId);
+            const res = AIEngine.generateSalesResponse(text, p);
 
-        appendMessage(text, 'user');
-        chatInput.value = '';
+            setTimeout(() => {
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'message ai';
+                aiMsg.innerText = res.text;
+                chatMessages.appendChild(aiMsg);
 
-        const selectedProdId = simProductSelect ? simProductSelect.value : null;
-        const productContext = ProductsModule.getProductById(selectedProdId);
-
-        setTimeout(() => {
-            const aiResult = AIEngine.generateSalesResponse(text, productContext);
-            appendMessage(aiResult.text, 'ai');
-
-            currentSimLead.intent = aiResult.intent;
-            
-            if (aiResult.sendCheckout) {
-                currentSimLead.checkoutSent = true;
-                currentSimLead.status = 'Checkout Enviado';
-                LeadsModule.saveLead({...currentSimLead});
-                SalesModule.updateDashboardMetrics();
-            } else {
-                LeadsModule.saveLead({...currentSimLead});
-            }
-        }, 600);
-    }
-
-    function appendMessage(text, sender) {
-        if (!chatMessages) return;
-        const msgDiv = document.createElement('div');
-        msgDiv.className = `message ${sender}`;
-        msgDiv.innerText = text;
-        chatMessages.appendChild(msgDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    if (btnSendMsg) btnSendMsg.addEventListener('click', handleSendMessage);
-    if (chatInput) {
-        chatInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleSendMessage();
+                if (res.sendCheckout) {
+                    currentSimLead.checkoutSent = true;
+                    currentSimLead.status = 'Checkout Enviado';
+                    LeadsModule.saveLead({...currentSimLead});
+                }
+            }, 500);
         });
     }
 
-    // 5. Configurações - Reset DB
-    const btnClearDb = document.getElementById('btn-clear-database');
-    if (btnClearDb) {
-        btnClearDb.addEventListener('click', () => {
-            if (confirm('Tem certeza que deseja limpar os dados de teste?')) {
-                StorageManager.clearAll();
-                location.reload();
-            }
-        });
-    }
-
-    // Render Inicial
     ProductsModule.renderProductsUI('products-list');
 }
 
-// Inicialização segura: Executa imediatamente se o DOM já carregou
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAssistIASales);
+// Inicialização imediata sem depender do estado do DOM
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    startApp();
 } else {
-    initAssistIASales();
+    document.addEventListener('DOMContentLoaded', startApp);
 }
