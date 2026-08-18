@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AssistIA Sales - Vendedor Automático WhatsApp</title>
-    <!-- FontAwesome Font Icons -->
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Estilos Principais -->
+    <!-- Estilos CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -117,7 +117,7 @@
                     <div class="card p-4">
                         <h3 class="mb-3"><i class="fa-solid fa-clock-rotate-left me-2"></i>Atividade Recente</h3>
                         <div id="dash-recent-activity">
-                            <!-- Injetado via sales.js -->
+                            <!-- Injetado via JS -->
                         </div>
                     </div>
                 </div>
@@ -127,7 +127,7 @@
             <section class="view-section" id="view-chats">
                 <div class="inbox-container card">
                     <div class="inbox-sidebar" id="chat-list-container">
-                        <!-- Injetado via chats.js -->
+                        <!-- Injetado via JS -->
                     </div>
                     <div class="inbox-messages-area">
                         <div class="chat-header">
@@ -157,12 +157,21 @@
             <section class="view-section" id="view-products">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h2>Catálogo & Controle de Estoque</h2>
-                    <button class="btn btn-primary" id="btn-open-import-modal">
-                        <i class="fa-solid fa-plus me-1"></i> Criar/Importar Produto
+                    <button class="btn btn-primary" id="btn-open-import-modal" onclick="
+                        document.getElementById('prod-id').value = '';
+                        document.getElementById('prod-name').value = '';
+                        document.getElementById('prod-price').value = '';
+                        document.getElementById('prod-stock').value = '';
+                        document.getElementById('prod-checkout').value = '';
+                        document.getElementById('prod-desc').value = '';
+                        document.getElementById('modal-product-title').innerText = 'Novo Produto';
+                        document.getElementById('modal-product').classList.add('active');
+                    ">
+                        <i class="fa-solid fa-plus me-1"></i> Criar Produto
                     </button>
                 </div>
                 <div id="products-list">
-                    <!-- Injetado via products.js -->
+                    <!-- Injetado via JS -->
                 </div>
             </section>
 
@@ -170,7 +179,7 @@
             <section class="view-section" id="view-recovery">
                 <h2 class="mb-3">Oportunidades de Recuperação</h2>
                 <div id="recovery-list-container">
-                    <!-- Injetado via followups.js -->
+                    <!-- Injetado via JS -->
                 </div>
             </section>
 
@@ -191,7 +200,7 @@
                                 </tr>
                             </thead>
                             <tbody id="customers-list-table">
-                                <!-- Injetado via customers.js -->
+                                <!-- Injetado via JS -->
                             </tbody>
                         </table>
                     </div>
@@ -202,7 +211,7 @@
             <section class="view-section" id="view-automations">
                 <h2 class="mb-3">Automações Ativas</h2>
                 <div id="automations-container">
-                    <!-- Injetado via automations.js -->
+                    <!-- Injetado via JS -->
                 </div>
             </section>
 
@@ -260,10 +269,10 @@
         </main>
     </div>
 
-    <!-- MODAL DE PRODUTO / IMPORTAÇÃO -->
+    <!-- MODAL DE PRODUTO -->
     <div class="modal-overlay" id="modal-product">
         <div class="modal-card">
-            <h3 id="modal-product-title" class="mb-3">Produto</h3>
+            <h3 id="modal-product-title" class="mb-3">Novo Produto</h3>
             <input type="hidden" id="prod-id">
             <div class="mb-2">
                 <label class="form-label">Nome do Produto</label>
@@ -287,7 +296,7 @@
                 <label class="form-label">Descrição</label>
                 <textarea id="prod-desc" class="form-control" rows="2"></textarea>
             </div>
-            <div class="d-flex justify-content-end gap-2">
+            <div class="d-flex justify-content-end gap-2 mt-3">
                 <button class="btn btn-secondary" onclick="document.getElementById('modal-product').classList.remove('active')">Cancelar</button>
                 <button class="btn btn-primary" onclick="
                     window.ProductsModule.saveProduct({
@@ -305,7 +314,7 @@
         </div>
     </div>
 
-    <!-- Módulos do Sistema AssistIA Sales Beta 1 -->
+    <!-- CARREGAMENTO DOS MÓDULOS JAVASCRIPT -->
     <script src="assets/js/storage.js?v=3.0"></script>
     <script src="assets/js/products.js?v=3.0"></script>
     <script src="assets/js/customers.js?v=3.0"></script>
