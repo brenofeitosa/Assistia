@@ -1,80 +1,97 @@
-/**
- * Motor Local de IA - Vendedor Proativo e Parser de Ofertas
- * Desenhado para transicionar facilmente para OpenAI / Claude API no futuro.
- */
-const AIEngine = {
-    // 1. Parsing de Oferta a partir de texto bruto (Importar com IA)
+window.AIEngine = {
     parseProductOffer(rawText) {
         const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
         
-        let extracted = {
-            name: lines[0] || 'Novo Produto Digital',
-            price: 97.00,
-            description: '',
-            checkoutUrl: '',
-            targetAudience: 'Pessoas interessadas no tema',
-            faqs: 'Acesso imediato após confirmação.'
+        let name = lines[0] || 'Novo Produto';
+        let price = 0.00;
+        let checkoutUrl = '';
+        let description = '';
+
+        const priceMatch = rawText.match(/R\$\s?(\d+[\.,]?\d*)/i) || rawText.match(/(\d+[\.,]\d{2})/);
+        if (priceMatch) {
+            price = parseFloat(priceMatch[1].replace(',', '.'));
+        }
+
+        const urlMatch = rawText.match(/(https?:\/\/[^\s]+)/g);
+        if (urlMatch) {
+            checkoutUrl = urlMatch[0];
+        }
+
+        const descLines = lines.filter(l => !l.includes('http') && !l.toLowerCase().includes('r$'));
+        if (descLines.length > 1) {
+            description = descLines.slice(1).join(' ');
+        } else if (descLines.length === 1) {
+            description = descLines[0];
+        }
+
+        return {
+            name,
+            price: price || 97.00,
+            checkoutUrl: checkoutUrl || 'https://checkout.exemplo.com',
+            description: description || 'Oferta especial.',
+            targetAudience: 'Público Alvo Geral',
+            faqs: 'Acesso imediato e garantia inclusa.'
         };
-
-        // RegEx para extrair preço e links
-        const priceRegex = /(?:R\$\s?|BRL\s?)?(\d+(?:[.,]\d{2})?)/i;
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-
-        lines.forEach((line) => {
-            if (line.match(urlRegex)) {
-                extracted.checkoutUrl = line.match(urlRegex)[0];
-            } else if (line.toLowerCase().includes('r$') || line.match(/\d+,\d{2}/)) {
-                const match = line.match(priceRegex);
-                if (match) {
-                    extracted.price = parseFloat(match[1].replace(',', '.'));
-                }
-            } else if (line !== extracted.name && !extracted.description) {
-                extracted.description += line + ' ';
-            }
-        });
-
-        extracted.description = extracted.description.trim() || 'Descrição otimizada do produto.';
-        if (!extracted.checkoutUrl) extracted.checkoutUrl = 'https://checkout.exemplo.com/produto';
-
-        return extracted;
     },
 
-    // 2. Motor de Conversação Vendedora Proativa (Simulador)
-    generateSalesResponse(userMessage, productContext) {
-        const msg = userMessage.toLowerCase();
-        const pName = productContext ? productContext.name : 'nosso treinamento';
-        const pPrice = productContext ? `R$ ${parseFloat(productContext.price).toFixed(2)}` : 'R$ 97,00';
-        const pLink = productContext ? productContext.checkoutUrl : 'https://meucheckout.com';
+    generateSalesResponse(input, product) {
+        const text = input.toLowerCase().trim();
+        const pName = product ? product.name : 'o treinamento';
+        const pPrice = product ? `R$ ${parseFloat(product.price).toFixed(2)}` : 'R$ 97,00';
+        const pCheckout = product ? product.checkoutUrl : '#';
 
-        let response = { text: '', intent: 'question', sendCheckout: false };
-
-        // Teste de Intenção: Dúvida de Preço
-        if (msg.includes('quanto custa') || msg.includes('qual o valor') || msg.includes('preco') || msg.includes('preço')) {
-            response.text = `O acesso ao ${pName} está por apenas ${pPrice}. Quer que eu te explique rapidinho como funciona e o que está incluído?`;
-            response.intent = 'price_inquiry';
-        } 
-        // Teste de Intenção: Confirmação / Interesse
-        else if (msg.includes('quero') || msg.includes('sim') || msg.includes('explicar') || msg.includes('como funciona')) {
-            response.text = `${productContext.description} Você está começando agora nesse mercado ou já possui alguma experiência?`;
-            response.intent = 'qualification';
-        }
-        // Teste de Intenção: Objeção / Dúvida Técnica
-        else if (msg.includes('ja trabalho') || msg.includes('já trabalho') || msg.includes('iniciante') || msg.includes('funciona para mim')) {
-            response.text = `Perfeito! Então os recursos avançados vão fazer total sentido para acelerar suas vendas no dia a dia. Pelo que você me contou, ele encaixa exatamente no que procura. Quer que eu te envie o link para começar?`;
-            response.intent = 'objection_handled';
-        }
-        // Teste de Intenção: Decisão de Compra
-        else if (msg.includes('quero comprar') || msg.includes('manda o link') || msg.includes('pode mandar') || msg.includes('link')) {
-            response.text = `Excelente decisão! Aqui está o seu link seguro para garantir a sua vaga com desconto:\n\n👉 ${pLink}\n\nAssim que finalizar, você recebe o acesso imediato no seu e-mail!`;
-            response.intent = 'buy_intent';
-            response.sendCheckout = true;
-        } 
-        // Resposta Padrão Conduzindo para Venda
-        else {
-            response.text = `Entendi perfeitamente! No ${pName}, nosso foco é te dar resultados práticos. Ficou com alguma dúvida sobre o conteúdo ou quer aproveitar a condição especial de ${pPrice}?`;
-            response.intent = 'general_nurture';
+        if (text.includes('quanto') || text.includes('preço') || text.includes('preco') || text.includes('valor') || text.includes('custa')) {
+            return {
+                text: `O investimento no ${pName} é de apenas ${pPrice}. Quer que eu te explique rapidinho o que está incluso?`,
+                sendCheckout: false,
+                intent: 'Consulta de Preço'
+            };
         }
 
-        return response;
+        if (text.includes('como funciona') || text.includes('saber mais') || text.includes('explic')) {
+            return {
+                text: `${pName} foi feito para você dominar estratégias de vendas e automação de forma prática. Posso te enviar o link com os detalhes?`,
+                sendCheckout: false,
+                intent: 'Explicação do Produto'
+            };
+        }
+
+        if (text.includes('caro') || text.includes('desconto') || text.includes('promoção') || text.includes('promocao')) {
+            return {
+                text: `Entendo perfeitamente. Mas pelo retorno que você terá automatizando suas vendas, o investimento de ${pPrice} se paga muito rápido! Vamos fechar?`,
+                sendCheckout: false,
+                intent: 'Objeção - Preço'
+            };
+        }
+
+        if (text.includes('pensar') || text.includes('será') || text.includes('sera') || text.includes('dúvida') || text.includes('duvida')) {
+            return {
+                text: `Sem problemas! Lembrando que você tem 7 dias de garantia para testar sem risco. Quer aproveitar a vaga com o valor atual?`,
+                sendCheckout: false,
+                intent: 'Objeção - Hesitação'
+            };
+        }
+
+        if (text.includes('online') || text.includes('receber') || text.includes('acesso') || text.includes('onde')) {
+            return {
+                text: `Sim! O acesso é 100% online e liberado imediatamente no seu e-mail logo após a confirmação.`,
+                sendCheckout: false,
+                intent: 'Dúvida - Entrega'
+            };
+        }
+
+        if (text.includes('comprar') || text.includes('quero') || text.includes('link') || text.includes('fechar') || text.includes('interessante') || text.includes('sim')) {
+            return {
+                text: `Excelente escolha! Segue o link seguro para garantir sua vaga no ${pName} por ${pPrice}: ${pCheckout}`,
+                sendCheckout: true,
+                intent: 'Intenção de Compra'
+            };
+        }
+
+        return {
+            text: `Perfeito! Fico à disposição para tirar qualquer dúvida sobre o ${pName}. Deseja garantir seu acesso agora?`,
+            sendCheckout: false,
+            intent: 'Atendimento Geral'
+        };
     }
 };
