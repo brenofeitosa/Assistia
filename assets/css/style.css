@@ -28,8 +28,8 @@
 }
 
 body {
-    background-color: var(--bg-main);
-    color: var(--text-primary);
+    background-color: var(--bg-main) !important;
+    color: var(--text-primary) !important;
     line-height: 1.5;
     overflow-x: hidden;
 }
@@ -74,6 +74,7 @@ body {
 .sidebar-header h2 {
     font-size: 1.125rem;
     font-weight: 700;
+    color: var(--text-primary);
 }
 
 .sidebar-header h2 span {
@@ -137,12 +138,17 @@ body {
     margin-bottom: 2rem;
 }
 
+.top-header h1 {
+    color: var(--text-primary);
+}
+
 .mobile-toggle {
     display: none;
     background: transparent;
     border: none;
     font-size: 1.25rem;
     cursor: pointer;
+    color: var(--text-primary);
 }
 
 .user-status {
@@ -153,6 +159,7 @@ body {
     padding: 0.5rem 1rem;
     border-radius: 20px;
     border: 1px solid var(--color-border);
+    color: var(--text-primary);
 }
 
 .status-indicator {
@@ -182,6 +189,7 @@ body {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
+    color: var(--text-primary);
 }
 
 .kpi-grid {
@@ -221,6 +229,7 @@ body {
     transition: background 0.2s;
     padding: 1rem;
     border-bottom: 1px solid var(--color-border);
+    color: var(--text-primary);
 }
 
 .chat-item:hover {
@@ -282,7 +291,7 @@ body {
 }
 
 /* ==========================================================================
-   5. MODAL E NOTIFICAÇÕES
+   5. MODAL E NOTIFICAÇÕES (DESATIVADO QUANDO INATIVO)
    ========================================================================== */
 .modal-overlay {
     position: fixed;
@@ -310,6 +319,7 @@ body {
     width: 100%;
     max-width: 500px;
     box-shadow: var(--shadow-md);
+    color: var(--text-primary);
 }
 
 /* ==========================================================================
@@ -336,6 +346,12 @@ body {
 .btn-outline-danger { border-color: var(--color-danger); color: var(--color-danger); background: transparent; }
 .btn-outline-secondary { border-color: var(--color-border); color: var(--text-muted); background: transparent; }
 
+.text-muted { color: var(--text-muted) !important; }
+.text-success { color: var(--color-success) !important; }
+.text-primary { color: var(--color-primary) !important; }
+.text-warning { color: var(--color-warning) !important; }
+.text-danger { color: var(--color-danger) !important; }
+
 .badge {
     display: inline-block;
     padding: 0.25em 0.6em;
@@ -354,11 +370,14 @@ body {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     font-size: 0.875rem;
+    background-color: #ffffff;
+    color: var(--text-primary);
 }
 
 .table {
     width: 100%;
     border-collapse: collapse;
+    color: var(--text-primary);
 }
 
 .table th, .table td {
@@ -367,7 +386,6 @@ body {
     text-align: left;
 }
 
-/* Responsividade */
 @media (max-width: 768px) {
     .sidebar { transform: translateX(-100%); }
     .sidebar.open { transform: translateX(0); }
