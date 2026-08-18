@@ -219,6 +219,8 @@ body {
 .chat-item {
     cursor: pointer;
     transition: background 0.2s;
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
 }
 
 .chat-item:hover {
@@ -280,7 +282,7 @@ body {
 }
 
 /* ==========================================================================
-   5. MODAL E NOTIFICAÇÕES (CORRIGIDO PARA NÃO BLOQUEAR CLIQUES)
+   5. MODAL E NOTIFICAÇÕES
    ========================================================================== */
 .modal-overlay {
     position: fixed;
@@ -289,16 +291,16 @@ body {
     width: 100vw;
     height: 100vh;
     background: rgba(15, 23, 42, 0.5);
-    display: none; /* ESCONDIDO POR PADRÃO */
+    display: none;
     justify-content: center;
     align-items: center;
     z-index: 9999;
-    pointer-events: none; /* NÃO INTERFERE QUANDO INATIVO */
+    pointer-events: none;
 }
 
 .modal-overlay.active {
     display: flex;
-    pointer-events: auto; /* ATIVA CLIQUES QUANDO ABERTO */
+    pointer-events: auto;
 }
 
 .modal-card {
@@ -308,27 +310,6 @@ body {
     width: 100%;
     max-width: 500px;
     box-shadow: var(--shadow-md);
-}
-
-.toast-notification {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: var(--text-primary);
-    color: white;
-    padding: 0.75rem 1.25rem;
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.3s ease;
-    z-index: 10000;
-    pointer-events: none;
-}
-
-.toast-notification.show {
-    opacity: 1;
-    transform: translateY(0);
 }
 
 /* ==========================================================================
