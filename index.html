@@ -302,15 +302,53 @@
     </div>
 
     <!-- CARREGAMENTO DOS MÓDULOS JAVASCRIPT -->
-    <script src="assets/js/storage.js?v=3.0"></script>
-    <script src="assets/js/products.js?v=3.0"></script>
-    <script src="assets/js/customers.js?v=3.0"></script>
-    <script src="assets/js/chats.js?v=3.0"></script>
-    <script src="assets/js/sales.js?v=3.0"></script>
-    <script src="assets/js/ai.js?v=3.0"></script>
-    <script src="assets/js/followups.js?v=3.0"></script>
-    <script src="assets/js/automations.js?v=3.0"></script>
-    <script src="assets/js/brain.js?v=3.0"></script>
-    <script src="assets/js/app.js?v=3.0"></script>
+    <script src="assets/js/storage.js"></script>
+    <script src="assets/js/products.js"></script>
+    <script src="assets/js/customers.js"></script>
+    <script src="assets/js/chats.js"></script>
+    <script src="assets/js/sales.js"></script>
+    <script src="assets/js/ai.js"></script>
+    <script src="assets/js/followups.js"></script>
+    <script src="assets/js/automations.js"></script>
+    <script src="assets/js/brain.js"></script>
+    <script src="assets/js/app.js"></script>
+
+    <!-- SCRIPT DE NAVEGAÇÃO GARANTIDA -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const sections = document.querySelectorAll('.view-section');
+        const pageTitle = document.getElementById('page-title');
+
+        navButtons.forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Pega o nome da tela a ser exibida
+            const targetView = btn.getAttribute('data-view');
+            if (!targetView) return;
+
+            // Remove a classe 'active' de todos os botões e telas
+            navButtons.forEach(b => b.classList.remove('active'));
+            sections.forEach(s => s.classList.remove('active'));
+
+            // Ativa o botão clicado
+            btn.classList.add('active');
+
+            // Exibe a tela correspondente
+            const activeSection = document.getElementById(`view-${targetView}`);
+            if (activeSection) {
+              activeSection.classList.add('active');
+            }
+
+            // Atualiza o título no topo
+            if (pageTitle) {
+              const btnText = btn.querySelector('span')?.innerText || 'Dashboard';
+              pageTitle.innerText = btnText;
+            }
+          });
+        });
+      });
+    </script>
 </body>
 </html>
