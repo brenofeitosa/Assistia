@@ -1,43 +1,36 @@
-/**
- * Módulo de Gestão de Leads
- */
-const LeadsModule = {
+window.LeadsModule = {
     getLeads() {
-        return StorageManager.get(StorageManager.KEYS.LEADS);
+        return window.StorageManager.get('assistia_leads', []);
     },
-
-    getLeadById(id) {
-        return this.getLeads().find(l => l.id === id);
-    },
-
     saveLead(lead) {
         const leads = this.getLeads();
         const index = leads.findIndex(l => l.id === lead.id);
-        if (index !== -1) {
+        lead.updatedAt = new Date().toISOString();
+        if (index >= 0) {
             leads[index] = lead;
         } else {
+            lead.createdAt = lead.createdAt || new Date().toISOString();
             leads.push(lead);
         }
-        StorageManager.set(StorageManager.KEYS.LEADS, leads);
-        return lead;
+        window.StorageManager.set('assistia_leads', leads);
     },
-
+    getLeadById(id) {
+        return this.getLeads().find(l => l.id === id);
+    },
     renderLeadsUI(containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
-
         const leads = this.getLeads();
         if (leads.length === 0) {
-            container.innerHTML = `<tr><td colspan="4" class="text-sm">Nenhum lead registrado no momento.</td></tr>`;
+            container.innerHTML = `<tr><td colspan="4" class="text-sm">Nenhum lead registrado até o momento.</td></tr>`;
             return;
         }
-
         container.innerHTML = leads.map(l => `
             <tr>
                 <td><strong>${l.name}</strong></td>
-                <td>${l.intent || 'Dúvida geral'}</td>
-                <td><span class="badge">${l.checkoutSent ? 'Checkout Enviado' : 'Em Conversa'}</span></td>
-                <td>${new Date(l.createdAt).toLocaleDateString('pt-BR')}</td>
+                <td>${l.intent || 'Dúvida Geral'}</td>
+                <td><span class="badge ${l.status === 'Recuperado' ? 'badge-success' : 'badge-warning'}">${l.status || 'Em Atendimento'}</span></td>
+                <td>${new Date(l.createdAt).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</td>
             </tr>
         `).join('');
     }
