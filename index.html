@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Vinculação do CSS na mesma pasta -->
+    <!-- Vinculação apontando para assets/css/style.css -->
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
@@ -92,7 +92,7 @@
                         </div>
                     </div>
                     <div class="card kpi-card">
-                        <i class="fa-solid fa-comments kpi-icon text-info"></i>
+                        <i class="fa-solid fa-comments kpi-icon text-primary"></i>
                         <div>
                             <small class="text-muted">Total Conversas</small>
                             <h3 id="dash-kpi-chats-count">0</h3>
@@ -106,7 +106,7 @@
                         </div>
                     </div>
                     <div class="card kpi-card">
-                        <i class="fa-solid fa-percent kpi-icon text-secondary"></i>
+                        <i class="fa-solid fa-percent kpi-icon text-muted"></i>
                         <div>
                             <small class="text-muted">Taxa de Conversão</small>
                             <h3 id="dash-kpi-conv-rate">0.0%</h3>
@@ -114,12 +114,10 @@
                     </div>
                 </div>
 
-                <div class="dashboard-details-grid mt-4">
-                    <div class="card p-4">
-                        <h3 class="mb-3"><i class="fa-solid fa-clock-rotate-left me-2"></i>Atividade Recente</h3>
-                        <div id="dash-recent-activity">
-                            <!-- Conteúdo do Dashboard via JavaScript -->
-                        </div>
+                <div class="dashboard-details-grid" style="margin-top: 1.5rem;">
+                    <div class="card" style="padding: 1.5rem;">
+                        <h3 style="margin-bottom: 1rem;"><i class="fa-solid fa-clock-rotate-left"></i> Atividade Recente</h3>
+                        <div id="dash-recent-activity"></div>
                     </div>
                 </div>
             </section>
@@ -127,22 +125,20 @@
             <!-- VIEW: CENTRAL DE CONVERSAS (INBOX) -->
             <section class="view-section" id="view-chats">
                 <div class="inbox-container card">
-                    <div class="inbox-sidebar" id="chat-list-container">
-                        <!-- Lista de chats via JavaScript -->
-                    </div>
+                    <div class="inbox-sidebar" id="chat-list-container"></div>
                     <div class="inbox-messages-area">
                         <div class="chat-header">
                             <div>
-                                <h3 id="chat-active-name" class="m-0">Selecione uma conversa</h3>
+                                <h3 id="chat-active-name" style="margin: 0;">Selecione uma conversa</h3>
                                 <small id="chat-active-status" class="text-muted"></small>
                             </div>
                             <div>
-                                <span id="chat-active-mode-badge" class="badge badge-primary me-2">IA Ativa</span>
+                                <span id="chat-active-mode-badge" class="badge badge-primary">IA Ativa</span>
                                 <button id="btn-toggle-chat-mode" class="btn btn-sm btn-outline-primary">Assumir Conversa</button>
                             </div>
                         </div>
                         <div class="chat-body" id="chat-active-messages">
-                            <p class="text-center text-muted p-4">Selecione uma conversa ao lado para visualizar os detalhes.</p>
+                            <p class="text-muted" style="text-align: center; padding: 2rem;">Selecione uma conversa ao lado para visualizar os detalhes.</p>
                         </div>
                         <div class="chat-footer">
                             <input type="text" id="chat-input-text" class="form-control" placeholder="Digite uma mensagem..." onkeypress="if(event.key==='Enter') window.ChatsModule.sendMessageFromInput()">
@@ -156,7 +152,7 @@
 
             <!-- VIEW: PRODUTOS & ESTOQUE -->
             <section class="view-section" id="view-products">
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h2>Catálogo & Controle de Estoque</h2>
                     <button class="btn btn-primary" id="btn-open-import-modal" onclick="
                         document.getElementById('prod-id').value = '';
@@ -168,27 +164,23 @@
                         document.getElementById('modal-product-title').innerText = 'Novo Produto';
                         document.getElementById('modal-product').classList.add('active');
                     ">
-                        <i class="fa-solid fa-plus me-1"></i> Criar Produto
+                        <i class="fa-solid fa-plus"></i> Criar Produto
                     </button>
                 </div>
-                <div id="products-list">
-                    <!-- Produtos via JavaScript -->
-                </div>
+                <div id="products-list"></div>
             </section>
 
             <!-- VIEW: RECUPERAÇÃO DE VENDAS -->
             <section class="view-section" id="view-recovery">
-                <h2 class="mb-3">Oportunidades de Recuperação</h2>
-                <div id="recovery-list-container">
-                    <!-- Itens via JavaScript -->
-                </div>
+                <h2 style="margin-bottom: 1rem;">Oportunidades de Recuperação</h2>
+                <div id="recovery-list-container"></div>
             </section>
 
             <!-- VIEW: CLIENTES -->
             <section class="view-section" id="view-customers">
-                <h2 class="mb-3">Base de Clientes</h2>
-                <div class="card p-3">
-                    <div class="table-responsive">
+                <h2 style="margin-bottom: 1rem;">Base de Clientes</h2>
+                <div class="card" style="padding: 1rem;">
+                    <div style="overflow-x: auto;">
                         <table class="table">
                             <thead>
                                 <tr>
@@ -200,9 +192,7 @@
                                     <th>Ações</th>
                                 </tr>
                             </thead>
-                            <tbody id="customers-list-table">
-                                <!-- Clientes via JavaScript -->
-                            </tbody>
+                            <tbody id="customers-list-table"></tbody>
                         </table>
                     </div>
                 </div>
@@ -210,59 +200,53 @@
 
             <!-- VIEW: AUTOMAÇÕES -->
             <section class="view-section" id="view-automations">
-                <h2 class="mb-3">Automações Ativas</h2>
-                <div id="automations-container">
-                    <!-- Automações via JavaScript -->
-                </div>
+                <h2 style="margin-bottom: 1rem;">Automações Ativas</h2>
+                <div id="automations-container"></div>
             </section>
 
             <!-- VIEW: CÉREBRO DA IA -->
             <section class="view-section" id="view-brain">
-                <h2 class="mb-3">Configuração do Cérebro da IA</h2>
-                <div class="card p-4">
+                <h2 style="margin-bottom: 1rem;">Configuração do Cérebro da IA</h2>
+                <div class="card" style="padding: 1.5rem;">
                     <form id="form-brain" onsubmit="event.preventDefault(); window.BrainModule.saveBrainFromForm();">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Nome da Loja</label>
-                                <input type="text" id="brain-store-name" class="form-control">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Nome da IA Vendedora</label>
-                                <input type="text" id="brain-ai-name" class="form-control">
-                            </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label class="form-label">Nome da Loja</label>
+                            <input type="text" id="brain-store-name" class="form-control">
                         </div>
-                        <div class="mb-3">
+                        <div style="margin-bottom: 1rem;">
+                            <label class="form-label">Nome da IA Vendedora</label>
+                            <input type="text" id="brain-ai-name" class="form-control">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
                             <label class="form-label">Tom de Voz</label>
                             <input type="text" id="brain-tone" class="form-control" placeholder="Ex: Persuasivo, atencioso e consultivo">
                         </div>
-                        <div class="mb-3">
+                        <div style="margin-bottom: 1rem;">
                             <label class="form-label">Objetivo Principal</label>
                             <input type="text" id="brain-goal" class="form-control">
                         </div>
-                        <div class="mb-3">
+                        <div style="margin-bottom: 1rem;">
                             <label class="form-label">Sobre a Empresa</label>
                             <textarea id="brain-info" class="form-control" rows="2"></textarea>
                         </div>
-                        <div class="mb-3">
+                        <div style="margin-bottom: 1rem;">
                             <label class="form-label">Regras de Atendimento</label>
                             <textarea id="brain-rules" class="form-control" rows="2"></textarea>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Horário de Atendimento</label>
-                                <input type="text" id="brain-hours" class="form-control">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Mensagem de Boas-Vindas</label>
-                                <input type="text" id="brain-welcome" class="form-control">
-                            </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label class="form-label">Horário de Atendimento</label>
+                            <input type="text" id="brain-hours" class="form-control">
                         </div>
-                        <div class="mb-3">
+                        <div style="margin-bottom: 1rem;">
+                            <label class="form-label">Mensagem de Boas-Vindas</label>
+                            <input type="text" id="brain-welcome" class="form-control">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
                             <label class="form-label">Instruções Personalizadas</label>
                             <textarea id="brain-custom" class="form-control" rows="3"></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary">
-                            <i class="fa-solid fa-floppy-disk me-1"></i> Salvar Configurações
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar Configurações
                         </button>
                     </form>
                 </div>
@@ -273,43 +257,45 @@
     <!-- MODAL DE PRODUTO -->
     <div class="modal-overlay" id="modal-product">
         <div class="modal-card">
-            <h3 id="modal-product-title" class="mb-3">Novo Produto</h3>
+            <h3 id="modal-product-title" style="margin-bottom: 1rem;">Novo Produto</h3>
             <input type="hidden" id="prod-id">
-            <div class="mb-2">
+            <div style="margin-bottom: 0.75rem;">
                 <label class="form-label">Nome do Produto</label>
                 <input type="text" id="prod-name" class="form-control">
             </div>
-            <div class="row">
-                <div class="col-6 mb-2">
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+                <div style="flex: 1;">
                     <label class="form-label">Preço (R$)</label>
                     <input type="number" step="0.01" id="prod-price" class="form-control">
                 </div>
-                <div class="col-6 mb-2">
+                <div style="flex: 1;">
                     <label class="form-label">Estoque Inicial</label>
                     <input type="number" id="prod-stock" class="form-control">
                 </div>
             </div>
-            <div class="mb-2">
+            <div style="margin-bottom: 0.75rem;">
                 <label class="form-label">Link de Checkout</label>
                 <input type="text" id="prod-checkout" class="form-control">
             </div>
-            <div class="mb-3">
+            <div style="margin-bottom: 1rem;">
                 <label class="form-label">Descrição</label>
                 <textarea id="prod-desc" class="form-control" rows="2"></textarea>
             </div>
-            <div class="d-flex justify-content-end gap-2 mt-3">
+            <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
                 <button class="btn btn-secondary" onclick="document.getElementById('modal-product').classList.remove('active')">Cancelar</button>
                 <button class="btn btn-primary" onclick="
-                    window.ProductsModule.saveProduct({
-                        id: document.getElementById('prod-id').value,
-                        name: document.getElementById('prod-name').value,
-                        price: parseFloat(document.getElementById('prod-price').value),
-                        stock: parseInt(document.getElementById('prod-stock').value),
-                        checkoutUrl: document.getElementById('prod-checkout').value,
-                        description: document.getElementById('prod-desc').value
-                    });
+                    if (window.ProductsModule) {
+                        window.ProductsModule.saveProduct({
+                            id: document.getElementById('prod-id').value,
+                            name: document.getElementById('prod-name').value,
+                            price: parseFloat(document.getElementById('prod-price').value),
+                            stock: parseInt(document.getElementById('prod-stock').value),
+                            checkoutUrl: document.getElementById('prod-checkout').value,
+                            description: document.getElementById('prod-desc').value
+                        });
+                        window.ProductsModule.renderProductsUI('products-list');
+                    }
                     document.getElementById('modal-product').classList.remove('active');
-                    window.ProductsModule.renderProductsUI('products-list');
                 ">Salvar</button>
             </div>
         </div>
