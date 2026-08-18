@@ -1,7 +1,7 @@
 /**
  * Módulo de Recuperação de Vendas (Follow-up)
  */
-const RecoveryModule = {
+window.RecoveryModule = {
     renderRecoveryUI(containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -23,7 +23,7 @@ const RecoveryModule = {
                 <td>
                     ${l.status === 'Recuperado' ? 
                         `<span class="text-online"><i class="fa-solid fa-check"></i> Venda Concluída</span>` :
-                        `<button class="btn btn-success btn-sm" onclick="RecoveryModule.simulateRecovery('${l.id}')">
+                        `<button class="btn btn-success btn-sm" onclick="window.RecoveryModule.simulateRecovery('${l.id}')">
                             <i class="fa-solid fa-rotate-left"></i> Simular Recuperação
                         </button>`
                     }
