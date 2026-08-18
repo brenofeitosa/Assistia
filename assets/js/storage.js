@@ -1,33 +1,21 @@
-/**
- * Persistence Layer - Storage Manager
- * Encapsula o LocalStorage, preparado para futura troca por chamadas de API (REST/GraphQL).
- */
-const StorageManager = {
-    KEYS: {
-        PRODUCTS: 'assistia_products',
-        LEADS: 'assistia_leads',
-        SALES: 'assistia_sales',
-        SETTINGS: 'assistia_settings'
-    },
-
-    get(key) {
+window.StorageManager = {
+    get(key, defaultValue) {
         try {
             const data = localStorage.getItem(key);
-            return data ? JSON.parse(data) : [];
+            return data ? JSON.parse(data) : defaultValue;
         } catch (e) {
-            console.error(`Erro ao ler ${key} do LocalStorage:`, e);
-            return [];
+            console.error(`Erro ao ler ${key}:`, e);
+            return defaultValue;
         }
     },
-
     set(key, value) {
         try {
             localStorage.setItem(key, JSON.stringify(value));
         } catch (e) {
-            console.error(`Erro ao salvar ${key} no LocalStorage:`, e);
+            console.error(`Erro ao salvar ${key}:`, e);
         }
     },
-
     clearAll() {
         localStorage.clear();
     }
+};
