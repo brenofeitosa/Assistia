@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AssistIA Sales - Seu WhatsApp Vendedor 24h</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- FontAwesome CDN para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="brand">
+                <div class="logo-icon"><i class="fa-solid fa-robot"></i></div>
+                <div class="brand-text">
+                    <h2>AssistIA <span>Sales</span></h2>
+                    <small>SaaS Automação 24h</small>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-view="dashboard">
+                    <i class="fa-solid fa-chart-line"></i> <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-view="products">
+                    <i class="fa-solid fa-box"></i> <span>Produtos</span>
+                </button>
+                <button class="nav-btn" data-view="simulator">
+                    <i class="fa-solid fa-comments"></i> <span>Vendedor IA</span>
+                </button>
+                <button class="nav-btn" data-view="recovery">
+                    <i class="fa-solid fa-rotate-left"></i> <span>Recuperação</span>
+                </button>
+                <button class="nav-btn" data-view="leads">
+                    <i class="fa-solid fa-users"></i> <span>Leads</span>
+                </button>
+                <button class="nav-btn" data-view="settings">
+                    <i class="fa-solid fa-gear"></i> <span>Configurações</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-badge"><span class="pulse"></span> Motor IA Ativo</div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header Mobile Bar -->
+            <header class="top-header">
+                <button class="mobile-toggle" id="mobile-toggle">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <h1 id="page-title">Dashboard ROI</h1>
+                <div class="user-profile">
+                    <i class="fa-solid fa-circle-user"></i>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <!-- VIEW 1: DASHBOARD -->
+                <section id="view-dashboard" class="view-section active">
+                    <div class="dash-banner">
+                        <div class="banner-info">
+                            <h3>Acelere suas Vendas no WhatsApp</h3>
+                            <p>O AssistIA está operando em tempo real. Veja abaixo o retorno financeiro em vendas diretas e recuperadas.</p>
+                        </div>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-card highlight">
+                            <div class="metric-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                            <div class="metric-data">
+                                <span class="label">Vendas Hoje</span>
+                                <h2 id="dash-sales-today">R$ 0,00</h2>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon"><i class="fa-solid fa-robot"></i></div>
+                            <div class="metric-data">
+                                <span class="label">Vendas pelo AssistIA</span>
+                                <h2 id="dash-sales-ai">R$ 0,00</h2>
+                            </div>
+                        </div>
+                        <div class="metric-card success">
+                            <div class="metric-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                            <div class="metric-data">
+                                <span class="label">Vendas Recuperadas</span>
+                                <h2 id="dash-sales-recovered">R$ 0,00</h2>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon"><i class="fa-solid fa-comments"></i></div>
+                            <div class="metric-data">
+                                <span class="label">Leads Atendidos</span>
+                                <h2 id="dash-leads-count">0</h2>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon"><i class="fa-solid fa-chart-pie"></i></div>
+                            <div class="metric-data">
+                                <span class="label">Taxa de Conversão</span>
+                                <h2 id="dash-conversion-rate">0,0%</h2>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recent-sales-box">
+                        <h3><i class="fa-solid fa-clock-rotate-left"></i> Últimas Vendas Geradas</h3>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                               <thead>
+                                   <tr>
+                                       <th>Cliente</th>
+                                       <th>Produto</th>
+                                       <th>Valor</th>
+                                       <th>Tipo</th>
+                                       <th>Horário</th>
+                                   </tr>
+                               </thead>
+                               <tbody id="dash-recent-sales-table">
+                               </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 2: PRODUTOS -->
+                <section id="view-products" class="view-section">
+                    <div class="section-actions">
+                        <h2>Gestão de Ofertas</h2>
+                        <button class="btn btn-primary" id="btn-open-import-modal">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Importar Oferta com IA
+                        </button>
+                    </div>
+
+                    <div class="products-grid" id="products-list">
+                    </div>
+                </section>
+
+                <!-- VIEW 3: SIMULADOR VENDEDOR IA -->
+                <section id="view-simulator" class="view-section">
+                    <div class="simulator-container">
+                        <div class="simulator-sidebar">
+                            <h3>Contexto de Venda</h3>
+                            <p class="text-sm">Selecione o produto que a IA usará para negociar no simulador:</p>
+                            <div class="form-group">
+                                <label for="sim-product-select">Produto Selecionado:</label>
+                                <select id="sim-product-select" class="form-control">
+                                </select>
+                            </div>
+                            <div class="product-preview-card" id="sim-product-details">
+                            </div>
+                            <button class="btn btn-secondary w-100 mt-2" id="btn-reset-chat">
+                                <i class="fa-solid fa-rotate"></i> Reiniciar Conversa
+                            </button>
+                        </div>
+
+                        <div class="chat-window">
+                            <div class="chat-header">
+                                <div class="chat-avatar"><i class="fa-solid fa-robot"></i></div>
+                                <div>
+                                    <h4 id="chat-product-title">AssistIA Sales Engine</h4>
+                                    <span class="text-online"><i class="fa-solid fa-circle"></i> Simulação Online (Modo Vendedor Proativo)</span>
+                                </div>
+                            </div>
+                            <div class="chat-messages" id="chat-messages">
+                            </div>
+                            <div class="chat-input-area">
+                                <input type="text" id="chat-input" placeholder="Digite uma dúvida ou intenção do cliente..." autocomplete="off">
+                                <button id="btn-send-msg" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VIEW 4: RECUPERAÇÃO DE VENDAS -->
+                <section id="view-recovery" class="view-section">
+                    <div class="section-header">
+                        <h2>Oportunidades de Recuperação</h2>
+                        <p>Leads que receberam o checkout, hesitaram e necessitam de acompanhamento para fechar venda.</p>
+                    </div>
+
+                    <div class="table-responsive mt-3">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Lead</th>
+                                    <th>Produto</th>
+                                    <th>Valor</th>
+                                    <th>Status</th>
+                                    <th>Última Ação</th>
+                                    <th>Ação de Recuperação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recovery-list-table">
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- VIEW 5: LEADS -->
+                <section id="view-leads" class="view-section">
+                    <h2>Leads Atendidos</h2>
+                    <div class="table-responsive mt-3">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome / Contato</th>
+                                    <th>Intenção Detectada</th>
+                                    <th>Status Checkout</th>
+                                    <th>Data de Início</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leads-list-table">
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- VIEW 6: CONFIGURAÇÕES -->
+                <section id="view-settings" class="view-section">
+                    <h2>Configurações do Sistema</h2>
+                    <div class="card p-4 max-w-600 mt-3">
+                        <h3>Arquitetura & IA</h3>
+                        <p class="text-sm mt-1">Status da API e armazenamento local do AssistIA Sales.</p>
+                        
+                        <div class="form-group mt-3">
+                            <label>Provedor de Inteligência Artificial:</label>
+                            <input type="text" class="form-control" value="Motor Local Integrado (Fallback Ativo)" disabled>
+                        </div>
+
+                        <div class="form-group mt-2">
+                            <label>Persistência de Dados:</label>
+                            <input type="text" class="form-control" value="LocalStorage Engine (Pronto para migração REST API)" disabled>
+                        </div>
+
+                        <button class="btn btn-danger mt-3" id="btn-clear-database">
+                            <i class="fa-solid fa-trash"></i> Resetar Dados de Teste
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL: IMPORTAR OFERTA COM IA -->
+    <div class="modal-overlay" id="modal-import">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Importar Oferta com IA</h3>
+                <button class="close-modal" id="btn-close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="import-step-1">
+                    <p class="text-sm">Cole abaixo o texto da sua página de vendas, anúncio ou copy da oferta. A IA fará o parsing dos dados para você:</p>
+                    <textarea id="import-raw-text" class="form-control mt-2" rows="6" placeholder="Exemplo:
+Curso de Vendas pelo WhatsApp
+R$ 97,00
+Aprenda estratégias para vender mais e automatizar seu atendimento.
+https://meucheckout.com/curso"></textarea>
+                    <button class="btn btn-primary w-100 mt-3" id="btn-process-ia-import">
+                        Extrair Informações com IA
+                    </button>
+                </div>
+
+                <div id="import-step-2" class="hidden">
+                    <div class="alert alert-info">
+                        <i class="fa-solid fa-check-circle"></i> A IA analisou sua oferta! Confirme os dados antes de salvar:
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Nome do Produto:</label>
+                        <input type="text" id="extracted-name" class="form-control">
+                    </div>
+                    <div class="form-row mt-2">
+                        <div class="form-group col">
+                            <label>Preço (R$):</label>
+                            <input type="number" step="0.01" id="extracted-price" class="form-control">
+                        </div>
+                        <div class="form-group col">
+                            <label>Link de Checkout:</label>
+                            <input type="url" id="extracted-checkout" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Descrição Curta / Promessa:</label>
+                        <textarea id="extracted-desc" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Público-Alvo:</label>
+                        <input type="text" id="extracted-audience" class="form-control">
+                    </div>
+                    <div class="form-group mt-2">
+                        <label>Principais Dúvidas/Objeções Identificadas:</label>
+                        <input type="text" id="extracted-faqs" class="form-control">
+                    </div>
+                    <div class="modal-footer-btns mt-3">
+                        <button class="btn btn-secondary" id="btn-back-import">Voltar</button>
+                        <button class="btn btn-success" id="btn-save-extracted-product">
+                            <i class="fa-solid fa-save"></i> SALVAR PRODUTO
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Módulos JavaScript na ordem relativa correta -->
+    <script src="assets/js/storage.js"></script>
+    <script src="assets/js/products.js"></script>
+    <script src="assets/js/leads.js"></script>
+    <script src="assets/js/sales.js"></script>
+    <script src="assets/js/ai.js"></script>
+    <script src="assets/js/followups.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
