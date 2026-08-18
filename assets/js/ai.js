@@ -1,97 +1,121 @@
 window.AIEngine = {
+    getBrainConfig() {
+        return window.StorageManager.get('assistia_brain', {
+            storeName: 'Nossa Loja',
+            aiName: 'AssistIA',
+            tone: 'Simpático',
+            rules: ''
+        });
+    },
+
     parseProductOffer(rawText) {
         const lines = rawText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-        
         let name = lines[0] || 'Novo Produto';
         let price = 0.00;
         let checkoutUrl = '';
-        let description = '';
 
         const priceMatch = rawText.match(/R\$\s?(\d+[\.,]?\d*)/i) || rawText.match(/(\d+[\.,]\d{2})/);
-        if (priceMatch) {
-            price = parseFloat(priceMatch[1].replace(',', '.'));
-        }
+        if (priceMatch) price = parseFloat(priceMatch[1].replace(',', '.'));
 
         const urlMatch = rawText.match(/(https?:\/\/[^\s]+)/g);
-        if (urlMatch) {
-            checkoutUrl = urlMatch[0];
-        }
-
-        const descLines = lines.filter(l => !l.includes('http') && !l.toLowerCase().includes('r$'));
-        if (descLines.length > 1) {
-            description = descLines.slice(1).join(' ');
-        } else if (descLines.length === 1) {
-            description = descLines[0];
-        }
+        if (urlMatch) checkoutUrl = urlMatch[0];
 
         return {
             name,
             price: price || 97.00,
-            checkoutUrl: checkoutUrl || 'https://checkout.exemplo.com',
-            description: description || 'Oferta especial.',
-            targetAudience: 'Público Alvo Geral',
-            faqs: 'Acesso imediato e garantia inclusa.'
+            stock: 10,
+            checkoutUrl: checkoutUrl || 'https://meucheckout.com',
+            description: lines.slice(1).join(' ') || 'Produto de alta qualidade.',
+            sizes: ['P', 'M', 'G']
         };
     },
 
-    generateSalesResponse(input, product) {
-        const text = input.toLowerCase().trim();
-        const pName = product ? product.name : 'o treinamento';
-        const pPrice = product ? `R$ ${parseFloat(product.price).toFixed(2)}` : 'R$ 97,00';
-        const pCheckout = product ? product.checkoutUrl : '#';
+    generateSalesResponse(userMessage, currentProductId) {
+        const text = userMessage.toLowerCase().trim();
+        const brain = this.getBrainConfig();
+        const products = window.ProductsModule.getProducts();
+        
+        let targetProduct = products.find(p => p.id === currentProductId) || products[0];
 
-        if (text.includes('quanto') || text.includes('preço') || text.includes('preco') || text.includes('valor') || text.includes('custa')) {
+        // Se o cliente mencionar outro produto na mensagem
+        for (let p of products) {
+            if (text.includes(p.name.toLowerCase())) {
+                targetProduct = p;
+                break;
+            }
+        }
+
+        if (!targetProduct) {
             return {
-                text: `O investimento no ${pName} é de apenas ${pPrice}. Quer que eu te explique rapidinho o que está incluso?`,
+                text: `Olá! Sou a ${brain.aiName} da ${brain.storeName}. Em que posso te ajudar hoje?`,
+                intent: 'Geral',
+                sendCheckout: false
+            };
+        }
+
+        // 1. Consulta de Tamanho e Estoque
+        if (text.includes('tamanho') || text.includes(' m ') || text.includes(' p ') || text.includes(' g ') || text.includes('tem')) {
+            if (targetProduct.stock > 0) {
+                return {
+                    text: `Temos sim! O produto **${targetProduct.name}** está disponível em estoque por apenas R$ ${targetProduct.price.toFixed(2)}. Gostaria de garantir a sua unidade agora?`,
+                    intent: 'Consulta Estoque - Disponível',
+                    sendCheckout: false,
+                    productId: targetProduct.id
+                };
+            } else {
+                const altProduct = products.find(p => p.id !== targetProduct.id && p.stock > 0);
+                let altText = altProduct ? ` Posso te recomendar o **${altProduct.name}** que temos disponível!` : '';
+                return {
+                    text: `Poxa, o tamanho/unidade do **${targetProduct.name}** acabou de esgotar no nosso estoque!${altText}`,
+                    intent: 'Consulta Estoque - Esgotado',
+                    sendCheckout: false
+                };
+            }
+        }
+
+        // 2. Pergunta de Preço
+        if (text.includes('quanto') || text.includes('preço') || text.includes('valor') || text.includes('custa')) {
+            return {
+                text: `O **${targetProduct.name}** está por R$ ${targetProduct.price.toFixed(2)}. Temos apenas ${targetProduct.stock} unidades em estoque! Quer que eu te envie o link para garantir?`,
+                intent: 'Consulta de Preço',
                 sendCheckout: false,
-                intent: 'Consulta de Preço'
+                productId: targetProduct.id
             };
         }
 
-        if (text.includes('como funciona') || text.includes('saber mais') || text.includes('explic')) {
+        // 3. Objeção de Preço
+        if (text.includes('caro') || text.includes('desconto')) {
             return {
-                text: `${pName} foi feito para você dominar estratégias de vendas e automação de forma prática. Posso te enviar o link com os detalhes?`,
-                sendCheckout: false,
-                intent: 'Explicação do Produto'
+                text: `Entendo perfeitamente! Mas este produto conta com garantia de qualidade e envio imediato. Conseguimos parcelar sem juros. Vamos fechar?`,
+                intent: 'Objeção - Preço',
+                sendCheckout: false
             };
         }
 
-        if (text.includes('caro') || text.includes('desconto') || text.includes('promoção') || text.includes('promocao')) {
-            return {
-                text: `Entendo perfeitamente. Mas pelo retorno que você terá automatizando suas vendas, o investimento de ${pPrice} se paga muito rápido! Vamos fechar?`,
-                sendCheckout: false,
-                intent: 'Objeção - Preço'
-            };
+        // 4. Intenção de Compra / Fechamento
+        if (text.includes('quero') || text.includes('comprar') || text.includes('link') || text.includes('sim') || text.includes('fechar')) {
+            if (targetProduct.stock > 0) {
+                return {
+                    text: `Excelente decisão! Clique no link seguro abaixo para finalizar seu pedido do **${targetProduct.name}** por R$ ${targetProduct.price.toFixed(2)}:\n\n${targetProduct.checkoutUrl}`,
+                    intent: 'Intenção de Compra',
+                    sendCheckout: true,
+                    productId: targetProduct.id
+                };
+            } else {
+                return {
+                    text: `Infelizmente esse item esgotou no momento. Deseja ser avisado assim que renovarmos o estoque?`,
+                    intent: 'Sem Estoque',
+                    sendCheckout: false
+                };
+            }
         }
 
-        if (text.includes('pensar') || text.includes('será') || text.includes('sera') || text.includes('dúvida') || text.includes('duvida')) {
-            return {
-                text: `Sem problemas! Lembrando que você tem 7 dias de garantia para testar sem risco. Quer aproveitar a vaga com o valor atual?`,
-                sendCheckout: false,
-                intent: 'Objeção - Hesitação'
-            };
-        }
-
-        if (text.includes('online') || text.includes('receber') || text.includes('acesso') || text.includes('onde')) {
-            return {
-                text: `Sim! O acesso é 100% online e liberado imediatamente no seu e-mail logo após a confirmação.`,
-                sendCheckout: false,
-                intent: 'Dúvida - Entrega'
-            };
-        }
-
-        if (text.includes('comprar') || text.includes('quero') || text.includes('link') || text.includes('fechar') || text.includes('interessante') || text.includes('sim')) {
-            return {
-                text: `Excelente escolha! Segue o link seguro para garantir sua vaga no ${pName} por ${pPrice}: ${pCheckout}`,
-                sendCheckout: true,
-                intent: 'Intenção de Compra'
-            };
-        }
-
+        // Fallback Consultivo
         return {
-            text: `Perfeito! Fico à disposição para tirar qualquer dúvida sobre o ${pName}. Deseja garantir seu acesso agora?`,
+            text: `Perfeito! O **${targetProduct.name}** é uma das nossas melhores opções. Posso te ajudar a realizar o pedido?`,
+            intent: 'Atendimento Geral',
             sendCheckout: false,
-            intent: 'Atendimento Geral'
+            productId: targetProduct.id
         };
     }
 };
