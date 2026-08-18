@@ -1,15 +1,12 @@
-/**
- * Módulo de Recuperação de Vendas (Follow-up)
- */
 window.RecoveryModule = {
     renderRecoveryUI(containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        const leads = LeadsModule.getLeads().filter(l => l.checkoutSent && !l.converted);
+        const leads = window.LeadsModule.getLeads().filter(l => l.checkoutSent && !l.converted);
 
         if (leads.length === 0) {
-            container.innerHTML = `<tr><td colspan="6" class="text-sm">Nenhum lead na fila de recuperação no momento.</td></tr>`;
+            container.innerHTML = `<tr><td colspan="6" class="text-sm">Nenhum lead pendente de recuperação.</td></tr>`;
             return;
         }
 
@@ -21,37 +18,30 @@ window.RecoveryModule = {
                 <td><span class="badge badge-warning">${l.status || 'Checkout Enviado'}</span></td>
                 <td>${new Date(l.updatedAt || l.createdAt).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</td>
                 <td>
-                    ${l.status === 'Recuperado' ? 
-                        `<span class="text-online"><i class="fa-solid fa-check"></i> Venda Concluída</span>` :
-                        `<button class="btn btn-success btn-sm" onclick="window.RecoveryModule.simulateRecovery('${l.id}')">
-                            <i class="fa-solid fa-rotate-left"></i> Simular Recuperação
-                        </button>`
-                    }
+                    <button class="btn btn-success btn-sm" onclick="window.RecoveryModule.simulateRecovery('${l.id}')">
+                        <i class="fa-solid fa-rotate-left"></i> Simular Recuperação
+                    </button>
                 </td>
             </tr>
         `).join('');
     },
 
     simulateRecovery(leadId) {
-        const lead = LeadsModule.getLeadById(leadId);
+        const lead = window.LeadsModule.getLeadById(leadId);
         if (!lead) return;
 
-        // Atualiza estado do lead
         lead.status = 'Recuperado';
         lead.converted = true;
-        lead.updatedAt = new Date().toISOString();
-        LeadsModule.saveLead(lead);
+        window.LeadsModule.saveLead(lead);
 
-        // Registra venda do tipo RECOVERY no módulo financeiro
-        SalesModule.recordSale({
+        window.SalesModule.recordSale({
             leadName: lead.name,
             productName: lead.productName,
             amount: lead.productPrice,
             type: 'RECOVERY'
         });
 
-        // Atualizar telas
         this.renderRecoveryUI('recovery-list-table');
-        SalesModule.updateDashboardMetrics();
+        window.SalesModule.updateDashboardMetrics();
     }
 };
