@@ -1,47 +1,54 @@
 window.RecoveryModule = {
+    getOpportunities() {
+        // Pega chats que pararam no carrinho/duvida e não converteram
+        const chats = window.ChatsModule.getChats();
+        return chats.filter(c => c.status === 'Aguardando Resposta' || c.lastMessage.toLowerCase().includes('olhada') || c.lastMessage.toLowerCase().includes('pensar'));
+    },
+
     renderRecoveryUI(containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        const leads = window.LeadsModule.getLeads().filter(l => l.checkoutSent && !l.converted);
+        const opps = this.getOpportunities();
 
-        if (leads.length === 0) {
-            container.innerHTML = `<tr><td colspan="6" class="text-sm">Nenhum lead pendente de recuperação.</td></tr>`;
+        if (opps.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state p-4 text-center">
+                    <i class="fa-solid fa-circle-check text-success fs-1 mb-2"></i>
+                    <p>Nenhuma venda pendente para recuperação no momento!</p>
+                </div>`;
             return;
         }
 
-        container.innerHTML = leads.map(l => `
-            <tr>
-                <td><strong>${l.name}</strong></td>
-                <td>${l.productName}</td>
-                <td>R$ ${parseFloat(l.productPrice).toFixed(2)}</td>
-                <td><span class="badge badge-warning">${l.status || 'Checkout Enviado'}</span></td>
-                <td>${new Date(l.updatedAt || l.createdAt).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</td>
-                <td>
-                    <button class="btn btn-success btn-sm" onclick="window.RecoveryModule.simulateRecovery('${l.id}')">
-                        <i class="fa-solid fa-rotate-left"></i> Simular Recuperação
+        container.innerHTML = opps.map(o => `
+            <div class="card p-3 mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1">${o.customerName}</h4>
+                        <small class="text-muted">Última mensagem: "${o.lastMessage}"</small>
+                    </div>
+                    <button class="btn btn-success btn-sm" onclick="window.RecoveryModule.triggerRecovery('${o.id}')">
+                        <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Recuperar Venda
                     </button>
-                </td>
-            </tr>
+                </div>
+            </div>
         `).join('');
     },
 
-    simulateRecovery(leadId) {
-        const lead = window.LeadsModule.getLeadById(leadId);
-        if (!lead) return;
+    triggerRecovery(chatId) {
+        const chats = window.ChatsModule.getChats();
+        const chat = chats.find(c => c.id === chatId);
+        if (!chat) return;
 
-        lead.status = 'Recuperado';
-        lead.converted = true;
-        window.LeadsModule.saveLead(lead);
+        const recoveryMsg = `Oi, ${chat.customerName}! Vi que você ficou com dúvida na sua compra. Consigo te liberar o envio prioritário hoje mesmo se fecharmos agora! Vamos aproveitar? 😊`;
 
-        window.SalesModule.recordSale({
-            leadName: lead.name,
-            productName: lead.productName,
-            amount: lead.productPrice,
-            type: 'RECOVERY'
-        });
+        chat.messages.push({ sender: 'ai', text: recoveryMsg });
+        chat.lastMessage = recoveryMsg;
+        chat.status = 'Em andamento';
+        chat.timestamp = new Date().toISOString();
 
-        this.renderRecoveryUI('recovery-list-table');
-        window.SalesModule.updateDashboardMetrics();
+        window.ChatsModule.saveChats(chats);
+        this.renderRecoveryUI('recovery-list-container');
+        if (window.Toast) window.Toast.show('Mensagem de recuperação enviada pela IA!');
     }
 };
